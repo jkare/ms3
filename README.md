@@ -62,7 +62,9 @@ CREATE TABLE `CONTACT` (
   KEY `CUSTOMER_CONTACT_FK` (`CUSTOMERID`),
   CONSTRAINT `CUSTOMER_CONTACT_FK` FOREIGN KEY (`CUSTOMERID`) REFERENCES `CUSTOMER` (`ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
-
- 
 ```
+
+![alt text](https://github.com/jkare/ms3/blob/master/DB_schema.png "DB Schema")
+
+
 
