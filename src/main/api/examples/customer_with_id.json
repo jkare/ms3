@@ -1,0 +1,8 @@
+  {
+    "customerId": 1,
+    "firstName":"Scott",
+    "lastName":"Morris",
+    "dob": "06/21/1980",
+    "gender":"M",
+    "title":"Manager"
+  }

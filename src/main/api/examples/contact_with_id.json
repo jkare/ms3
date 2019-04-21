@@ -1,0 +1,6 @@
+{
+  "contactId": 1,
+  "type": "email",
+  "value": "bfe@sample.com",
+  "preferred" : "true"
+}

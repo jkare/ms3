@@ -1,0 +1,22 @@
+[
+  {
+    "addressId":1,
+    "type ": "home",
+    "number": 1234,
+    "street": "blah blah St",
+    "unit": "1 a",
+    "city": "Somewhere",
+    "state": "WV",
+    "zipCode": "12345"
+  },
+  {
+    "addressId":2,
+    "type ": "office",
+    "number": 1333,
+    "street": "Main St",
+    "unit": "101",
+    "city": "Duluth",
+    "state": "WV",
+    "zipCode": "12345"
+  }
+]

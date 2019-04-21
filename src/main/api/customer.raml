@@ -1,0 +1,150 @@
+#%RAML 1.0
+version: v1
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/5c4b24a6-31ef-49c9-a4d7-e1899f7aee18/ # 
+title: customer
+
+/customers:
+  get:
+    description: Retrieve list of all customers
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/customer.json
+  post:
+    description: Adds new customer
+    body:
+      application/json:
+        example: !include examples/customer.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include examples/customer_with_id.json
+
+  /{customerid}:
+    uriParameters:
+      customerid:
+        type: integer
+    get:
+      description: Retrieves the customer matching the given id
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include examples/customer_with_id.json
+    put:
+      description: Updates customer details
+      body:
+        application/json:
+          example: !include examples/customer.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include examples/customer_with_id.json
+    delete:
+      description: Deletes customer with given id
+      responses:
+        200:
+          body:
+            application/json:
+              example: {"message":"Customer deleted"}
+    /addresses:
+      get:
+        description: Retrieve all addresses of the corresponding customer
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include examples/addresses.json
+      post:
+        description: Adds new address for the customer
+        body:
+          application/json:
+            example: !include examples/address.json
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include examples/address_with_id.json
+      /{addressid}:
+        uriParameters:
+          addressid:
+            type: integer
+        get:
+          description: Retrieves the address matching the given id for the given customer
+          responses:
+            200:
+              body:
+                application/json:
+                  example: !include examples/address_with_id.json
+        put:
+          description: Updates customer's address for the given address id
+          body:
+            application/json:
+              example: !include examples/address.json
+          responses:
+            200:
+              body:
+                application/json:
+                  example: !include examples/address_with_id.json
+        delete:
+          description: Deletes customer's address matching the given id
+          responses:
+            200:
+              body:
+                application/json:
+                  example: {"message":"Customer's address deleted successfully!"}
+    /contacts:
+      get:
+        description: Retrieves all contacts of the customer
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include examples/contacts.json
+      post:
+        description: Adds new contact
+        body:
+          application/json:
+            example: !include examples/contact.json
+        responses:
+          201:
+            body:
+              application/json:
+                example: !include examples/contact_with_id.json
+      /{contactid}:
+        uriParameters:
+          contactid:
+            type: integer
+        get:
+          description: Retrieve one of the contacts of the customer
+          responses:
+            200:
+              body:
+                application/json:
+                  example: !include examples/contact_with_id.json
+        put:
+          description: Updates contact info of the customer
+          body:
+            application/json:
+              example: !include examples/contact.json
+          responses:
+            200:
+              body:
+                application/json:
+                  example: !include examples/contact_with_id.json
+        delete:
+          description: Deletes the contact of the customer
+          responses:
+            200:
+              body:
+                application/json:
+                  example: {"message":"Contact deleted"}
+          
+
+                
+    
+      
+  

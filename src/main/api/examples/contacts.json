@@ -1,0 +1,14 @@
+[
+  {
+    "contactId":101,
+    "type": "email",
+    "value": "bfe@sample.com",
+    "preferred" : "true"
+  },
+  {
+    "contactId":102,
+    "type": "cell",
+    "value": "303-484-2345",
+    "preferred" : "false"
+  }
+]

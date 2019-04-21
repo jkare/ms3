@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+
+    <flow name="get-customers-flow">
+        <logger message="starting flow get-customer-flow : #[payload]" level="INFO" doc:name="Logger"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:dynamic-query><![CDATA[select * from CUSTOMER]]></db:dynamic-query>
+        </db:select>
+        <dw:transform-message doc:name="Transform Message" metadata:id="9be987ac-9c9d-4db4-a933-9a1ba6306733">
+            <dw:input-payload/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload map {
+	id : $.ID,
+	firstName: $.FIRSTNAME,
+	lastName: $.LASTNAME,
+	dateOfBirth: $.DOB,
+	gender: $.GENDER,
+	title: $.TITLE
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <logger message="finished flow get-customer-flow : #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="post-customer-flow">
+        <logger message="starting flow post-customer-flow : #[payload]" level="INFO" doc:name="Logger"/>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload]]></dw:set-payload>
+        </dw:transform-message>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="JSON to Object"/>
+        <db:insert config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[INSERT INTO `CUSTOMER` (`FIRSTNAME`, `LASTNAME`, `DOB`, `GENDER`, `TITLE`)
+VALUES
+	(#[payload.firstName], #[payload.lastName], #[payload.dob], #[payload.gender], #[payload.title]);]]></db:parameterized-query>
+        </db:insert>
+        <set-payload value="{&quot;message&quot;: &quot;Customer successfully added&quot;}" doc:name="Set Payload"/>
+        <logger message="finished flow post-customer-flow : #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="delete-customer-flow">
+        <logger level="INFO" doc:name="Logger" message="starting flow delete-customer-flow : #[payload]"/>
+        <db:delete config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[delete from CUSTOMER where ID=#[message.inboundProperties.'http.uri.params'.customerid]]]></db:parameterized-query>
+        </db:delete>
+        <set-payload value="{&quot;message&quot; : &quot;Customer deleted!!&quot;}" doc:name="Set Payload"/>
+        <logger level="INFO" doc:name="Logger" message="finished flow delete-customer-flow : #[payload]"/>
+    </flow>
+    <flow name="put-customer-flow">
+        <logger message="starting flow put-customer-flow : #[payload]" level="INFO" doc:name="Logger"/>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload]]></dw:set-payload>
+        </dw:transform-message>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="JSON to Object"/>
+        <set-variable variableName="updateCustomerPayload" value="#[payload]" doc:name="Variable"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:dynamic-query><![CDATA[select * from CUSTOMER where ID=#[message.inboundProperties.'http.uri.params'.customerid]]]></db:dynamic-query>
+        </db:select>
+        <choice doc:name="Choice">
+            <when expression="#[payload.size()&gt;0]">
+                <dw:transform-message doc:name="Transform Message">
+                    <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload]]></dw:set-payload>
+                    <dw:set-variable variableName="fnameVar"><![CDATA[%dw 1.0
+%output application/java
+---
+flowVars.updateCustomerPayload.firstName when flowVars.updateCustomerPayload.firstName != null otherwise payload[0].FIRSTNAME]]></dw:set-variable>
+                    <dw:set-variable variableName="lnameVar"><![CDATA[%dw 1.0
+%output application/java
+---
+flowVars.updateCustomerPayload.lastName when flowVars.updateCustomerPayload.lastName != null otherwise payload[0].LASTNAME]]></dw:set-variable>
+                    <dw:set-variable variableName="dateofbirthVar"><![CDATA[%dw 1.0
+%output application/java
+---
+flowVars.updateCustomerPayload.dob when flowVars.updateCustomerPayload.dob != null otherwise payload[0].DOB]]></dw:set-variable>
+                    <dw:set-variable variableName="genderVar"><![CDATA[%dw 1.0
+%output application/java
+---
+flowVars.updateCustomerPayload.gender when flowVars.updateCustomerPayload.gender != null otherwise payload[0].GENDER]]></dw:set-variable>
+                    <dw:set-variable variableName="titleVar"><![CDATA[%dw 1.0
+%output application/java
+---
+flowVars.updateCustomerPayload.title when flowVars.updateCustomerPayload.title != null otherwise payload[0].TITLE]]></dw:set-variable>
+                </dw:transform-message>
+                <db:update config-ref="MySQL_Configuration" doc:name="Database">
+                    <db:parameterized-query><![CDATA[update CUSTOMER
+set FIRSTNAME=#[flowVars.fnameVar], LASTNAME=#[flowVars.lnameVar], DOB=#[flowVars.dateofbirthVar], GENDER=#[flowVars.genderVar], TITLE=#[flowVars.titleVar] 
+where ID=#[flowVars.customerid]]]></db:parameterized-query>
+                </db:update>
+                <set-payload value="{&quot;message&quot;:&quot;Customer updated successfully!!&quot;}" doc:name="Set Payload"/>
+            </when>
+            <otherwise>
+                <set-payload value="{&quot;message&quot;:&quot;No data found&quot;}" doc:name="Set Payload"/>
+            </otherwise>
+        </choice>
+        <logger message="finished flow put-customer-flow : #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="get-customer-withid-flow">
+        <logger message="starting flow get-customer-withid-flow : #[payload]" level="INFO" doc:name="Logger"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:dynamic-query><![CDATA[select * from CUSTOMER
+where ID=#[flowVars.customerid]]]></db:dynamic-query>
+        </db:select>
+        <choice doc:name="Choice">
+            <when expression="#[payload.size()&gt;0]">
+                <dw:transform-message doc:name="Transform Message" metadata:id="9be987ac-9c9d-4db4-a933-9a1ba6306733">
+                    <dw:input-payload/>
+                    <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload map {
+	id : $.ID,
+	firstName: $.FIRSTNAME,
+	lastName: $.LASTNAME,
+	dateOfBirth: $.DOB,
+	gender: $.GENDER,
+	title: $.TITLE
+}]]></dw:set-payload>
+                </dw:transform-message>
+            </when>
+            <otherwise>
+                <set-payload value="{&quot;message&quot;:&quot;No data found&quot;}" doc:name="Set Payload"/>
+            </otherwise>
+        </choice>
+        <logger message="finished flow get-customer-withid-flow : #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="get-addresses-flow">
+        <logger message="starting flow get-addresses-flow : #[payload]" level="INFO" doc:name="Logger"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[select * from ADDRESS
+where CUSTOMERID=#[flowVars.customerid]]]></db:parameterized-query>
+        </db:select>
+        <dw:transform-message doc:name="Transform Message" metadata:id="9be987ac-9c9d-4db4-a933-9a1ba6306733">
+            <dw:input-payload/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload map {
+	id : $.ID,
+	customerId : $.CUSTOMERID,
+	type: $.TYPE,
+	number: $.NUMBER,
+	street: $.STREET,
+	unit: $.UNIT,
+	city: $.CITY,
+	state: $.STATE,
+	zipcode: $.ZIPCODE
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <logger message="finished flow get-addresses-flow : #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="post-address-flow">
+        <logger message="starting flow post-address-flow : #[payload]" level="INFO" doc:name="Logger"/>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload]]></dw:set-payload>
+        </dw:transform-message>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="JSON to Object"/>
+        <db:insert config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[INSERT INTO `ADDRESS` (`CUSTOMERID`, `TYPE`, `NUMBER`, `STREET`, `UNIT`, `CITY`, `STATE`, `ZIPCODE`)
+VALUES
+	(#[flowVars.customerid], #[payload.type], #[payload.number], #[payload.street], #[payload.unit], #[payload.city], #[payload.state], #[payload.zipcode]);]]></db:parameterized-query>
+        </db:insert>
+        <set-payload value="{&quot;message&quot;: &quot;Customer's address successfully added&quot;}" doc:name="Set Payload"/>
+        <logger message="finished flow post-address-flow : #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="delete-address-flow">
+        <logger message="starting flow delete-address-flow : #[payload]" level="INFO" doc:name="Logger"/>
+        <db:delete config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[delete from ADDRESS where ID=#[flowVars.addressid]]]></db:parameterized-query>
+        </db:delete>
+        <set-payload value="{&quot;message&quot; : &quot;Address deleted!!&quot;}" doc:name="Set Payload"/>
+        <logger message="finished flow delete-address-flow : #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="put-address-flow">
+        <logger message="starting flow put-address-flow : #[payload]" level="INFO" doc:name="Logger"/>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload]]></dw:set-payload>
+        </dw:transform-message>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="JSON to Object"/>
+        <set-variable variableName="updateAddressPayload" value="#[payload]" doc:name="Variable"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:dynamic-query><![CDATA[select * from ADDRESS where ID=#[flowVars.addressid]]]></db:dynamic-query>
+        </db:select>
+        <choice doc:name="Choice">
+            <when expression="#[payload.size()&gt;0]">
+                <dw:transform-message doc:name="Transform Message">
+                    <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload]]></dw:set-payload>
+                    <dw:set-variable variableName="typeVar"><![CDATA[%dw 1.0
+%output application/java
+---
+// addresscomment
+flowVars.updateAddressPayload.type when flowVars.updateAddressPayload.type != null otherwise payload[0].TYPE]]></dw:set-variable>
+                    <dw:set-variable variableName="numberVar"><![CDATA[%dw 1.0
+%output application/java
+---
+flowVars.updateAddressPayload.number when flowVars.updateAddressPayload.number != null otherwise payload[0].NUMBER]]></dw:set-variable>
+                    <dw:set-variable variableName="streetVar"><![CDATA[%dw 1.0
+%output application/java
+---
+flowVars.updateAddressPayload.street when flowVars.updateAddressPayload.street != null otherwise payload[0].STREET]]></dw:set-variable>
+                    <dw:set-variable variableName="unitVar"><![CDATA[%dw 1.0
+%output application/java
+---
+flowVars.updateAddressPayload.unit when flowVars.updateAddressPayload.unit != null otherwise payload[0].UNIT]]></dw:set-variable>
+                    <dw:set-variable variableName="cityVar"><![CDATA[%dw 1.0
+%output application/java
+---
+flowVars.updateAddressPayload.city when flowVars.updateAddressPayload.city != null otherwise payload[0].CITY]]></dw:set-variable>
+                    <dw:set-variable variableName="stateVar"><![CDATA[%dw 1.0
+%output application/java
+---
+flowVars.updateAddressPayload.state when flowVars.updateAddressPayload.state != null otherwise payload[0].STATE]]></dw:set-variable>
+                    <dw:set-variable variableName="zipcodeVar"><![CDATA[%dw 1.0
+%output application/java
+---
+flowVars.updateAddressPayload.zipcode when flowVars.updateAddressPayload.zipcode != null otherwise payload[0].ZIPCODE]]></dw:set-variable>
+                </dw:transform-message>
+                <db:update config-ref="MySQL_Configuration" doc:name="Database">
+                    <db:parameterized-query><![CDATA[update ADDRESS
+set TYPE=#[flowVars.typeVar], NUMBER=#[flowVars.numberVar], STREET=#[flowVars.streetVar], UNIT=#[flowVars.unitVar], CITY=#[flowVars.cityVar], STATE=#[flowVars.stateVar], ZIPCODE=#[flowVars.zipcodeVar]
+where ID=#[flowVars.addressid]]]></db:parameterized-query>
+                </db:update>
+                <set-payload value="{&quot;message&quot;:&quot;Address updated successfully!!&quot;}" doc:name="Set Payload"/>
+            </when>
+            <otherwise>
+                <set-payload value="{&quot;message&quot;:&quot;No data found&quot;}" doc:name="Set Payload"/>
+            </otherwise>
+        </choice>
+        <logger message="finished flow put-address-flow : #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="get-address-withid-flow">
+        <logger message="starting flow get-address-withid-flow : #[payload]" level="INFO" doc:name="Logger"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:dynamic-query><![CDATA[select * from ADDRESS
+where ID=#[flowVars.addressid]]]></db:dynamic-query>
+        </db:select>
+        <choice doc:name="Choice">
+            <when expression="#[payload.size()&gt;0]">
+                <dw:transform-message doc:name="Transform Message" metadata:id="9be987ac-9c9d-4db4-a933-9a1ba6306733">
+                    <dw:input-payload/>
+                    <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload map {
+	id : $.ID,
+	customerId: $.CUSTOMERID,
+	type: $.TYPE,
+	number: $.NUMBER,
+	street: $.STREET,
+	unit: $.UNIT,
+	city: $.CITY,
+	state: $.STATE,
+	zipcode: $.ZIPCODE
+}]]></dw:set-payload>
+                </dw:transform-message>
+            </when>
+            <otherwise>
+                <set-payload value="{&quot;message&quot;:&quot;No data found&quot;}" doc:name="Set Payload"/>
+            </otherwise>
+        </choice>
+        <logger message="finished flow get-address-withid-flow : #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="get-contacts-flow">
+        <logger message="starting flow get-contacts-flow : #[payload]" level="INFO" doc:name="Logger"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[select * from CONTACT
+where CUSTOMERID=#[flowVars.customerid]]]></db:parameterized-query>
+        </db:select>
+        <dw:transform-message doc:name="Transform Message" metadata:id="9be987ac-9c9d-4db4-a933-9a1ba6306733">
+            <dw:input-payload/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload map {
+	id : $.ID,
+	customerId : $.CUSTOMERID,
+	type: $.TYPE,
+	value: $.VALUE,
+	preferred: $.PREFERRED
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <logger message="finished flow get-contacts-flow : #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="post-contact-flow">
+        <logger message="starting flow post-contact-flow : #[payload]" level="INFO" doc:name="Logger"/>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload]]></dw:set-payload>
+        </dw:transform-message>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="JSON to Object"/>
+        <db:insert config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[INSERT INTO `CONTACT` (`CUSTOMERID`, `TYPE`, `VALUE`, `PREFERRED`)
+VALUES
+	(#[flowVars.customerid], #[payload.type], #[payload.value], #[payload.preferred]);]]></db:parameterized-query>
+        </db:insert>
+        <set-payload value="{&quot;message&quot;: &quot;Customer's contacts successfully added&quot;}" doc:name="Set Payload"/>
+        <logger message="finished flow post-contact-flow : #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="delete-contact-flow">
+        <logger message="starting flow delete-contact-flow : #[payload]" level="INFO" doc:name="Logger"/>
+        <db:delete config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[delete from CONTACT where ID=#[flowVars.contactid]]]></db:parameterized-query>
+        </db:delete>
+        <set-payload value="{&quot;message&quot; : &quot;Contact deleted!!&quot;}" doc:name="Set Payload"/>
+        <logger message="finished flow delete-contact-flow : #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="put-contact-flow">
+        <logger message="starting flow put-contact-flow : #[payload]" level="INFO" doc:name="Logger"/>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload]]></dw:set-payload>
+        </dw:transform-message>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="JSON to Object"/>
+        <set-variable variableName="updateContactPayload" value="#[payload]" doc:name="Variable"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:dynamic-query><![CDATA[select * from CONTACT where ID=#[flowVars.contactid]]]></db:dynamic-query>
+        </db:select>
+        <choice doc:name="Choice">
+            <when expression="#[payload.size()&gt;0]">
+                <dw:transform-message doc:name="Transform Message">
+                    <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload]]></dw:set-payload>
+                    <dw:set-variable variableName="typeVar"><![CDATA[%dw 1.0
+%output application/java
+---
+// contactcomment
+flowVars.updateContactPayload.type when flowVars.updateContactPayload.type != null otherwise payload[0].TYPE]]></dw:set-variable>
+                    <dw:set-variable variableName="valueVar"><![CDATA[%dw 1.0
+%output application/java
+---
+flowVars.updateContactPayload.value when flowVars.updateContactPayload.value != null otherwise payload[0].VALUE]]></dw:set-variable>
+                    <dw:set-variable variableName="preferredVar"><![CDATA[%dw 1.0
+%output application/java
+---
+flowVars.updateContactPayload.preferred when flowVars.updateContactPayload.preferred != null otherwise payload[0].PREFERRED]]></dw:set-variable>
+                </dw:transform-message>
+                <db:update config-ref="MySQL_Configuration" doc:name="Database">
+                    <db:parameterized-query><![CDATA[update CONTACT
+set TYPE=#[flowVars.typeVar], VALUE=#[flowVars.valueVar], PREFERRED=#[flowVars.preferredVar]
+where ID=#[flowVars.contactid]]]></db:parameterized-query>
+                </db:update>
+                <set-payload value="{&quot;message&quot;:&quot;Contact updated successfully!!&quot;}" doc:name="Set Payload"/>
+            </when>
+            <otherwise>
+                <set-payload value="{&quot;message&quot;:&quot;No data found&quot;}" doc:name="Set Payload"/>
+            </otherwise>
+        </choice>
+        <logger message="finished flow put-contact-flow : #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="get-contact-withid-flow">
+        <logger message="starting flow get-contact-withid-flow : #[payload]" level="INFO" doc:name="Logger"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:dynamic-query><![CDATA[select * from CONTACT
+where ID=#[flowVars.contactid]]]></db:dynamic-query>
+        </db:select>
+        <choice doc:name="Choice">
+            <when expression="#[payload.size()&gt;0]">
+                <dw:transform-message doc:name="Transform Message" metadata:id="9be987ac-9c9d-4db4-a933-9a1ba6306733">
+                    <dw:input-payload/>
+                    <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload map {
+	id : $.ID,
+	customerId: $.CUSTOMERID,
+	type: $.TYPE,
+	value: $.VALUE,
+	preferred: $.PREFERRED
+}]]></dw:set-payload>
+                </dw:transform-message>
+            </when>
+            <otherwise>
+                <set-payload value="{&quot;message&quot;:&quot;No data found&quot;}" doc:name="Set Payload"/>
+            </otherwise>
+        </choice>
+        <logger message="finished flow get-contact-withid-flow : #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+</mule>

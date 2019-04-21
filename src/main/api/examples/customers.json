@@ -1,0 +1,26 @@
+[
+  {
+    "customerId":1,
+    "firstName":"Scott",
+    "lastName":"Morris",
+    "dob": "06/21/1980",
+    "gender":"M",
+    "title":"Manager"
+  },
+  {
+    "customerId":2,
+    "firstName":"Bob",
+    "lastName":"Frederick",
+    "dob": "02/21/1980",
+    "gender":"M",
+    "title":"Engineer II"
+  },
+  {
+    "customerId":3,
+    "firstName":"Snow",
+    "lastName":"White",
+    "dob": "02/21/1980",
+    "gender":"F",
+    "title":"Engineer I"
+  }
+]
