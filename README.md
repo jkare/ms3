@@ -2,28 +2,28 @@
 This is a contact management API. It connects to MySQL database and supports CRUD operations. below is the list of apis.
 ```
 customers
-  GET: http://{host}/api/customers
-  POST: http://{host}/api/customers
+  GET: http://customersampleapi.us-e2.cloudhub.io/api/customers
+  POST: http://customersampleapi.us-e2.cloudhub.io/api/customers
 customer
-  GET: http://{host}/api/customers/1
-  PUT: http://{host}/api/customers/1
-  DELETE: http://{host}/api/customers/1
+  GET: http://customersampleapi.us-e2.cloudhub.io/api/customers/1
+  PUT: http://customersampleapi.us-e2.cloudhub.io/api/customers/1
+  DELETE: http://customersampleapi.us-e2.cloudhub.io/api/customers/1
   
 addresses
-  GET: http://{host}/api/customers/1/addresses
-  POST: http://{host}/api/customers/1/addresses
+  GET: http://customersampleapi.us-e2.cloudhub.io/api/customers/1/addresses
+  POST: http://customersampleapi.us-e2.cloudhub.io/api/customers/1/addresses
 address
-  GET: http://{host}/api/customers/1/addresses/1
-  PUT: http://{host}/api/customers/1/addresses/1
-  DELETE: http://{host}/api/customers/1/addresses/1
+  GET: http://customersampleapi.us-e2.cloudhub.io/api/customers/1/addresses/1
+  PUT: http://customersampleapi.us-e2.cloudhub.io/api/customers/1/addresses/1
+  DELETE: http://customersampleapi.us-e2.cloudhub.io/api/customers/1/addresses/1
   
 contacts
-  GET: http://{host}/api/customers/1/contacts
-  POST: http://{host}/api/customers/1/contacts
+  GET: http://customersampleapi.us-e2.cloudhub.io/api/customers/1/contacts
+  POST: http://customersampleapi.us-e2.cloudhub.io/api/customers/1/contacts
 contact
-  GET: http://{host}/api/customers/1/contacts/1
-  PUT: http://{host}/api/customers/1/contacts/1
-  DELETE: http://{host}/api/customers/1/contacts/1
+  GET: http://customersampleapi.us-e2.cloudhub.io/api/customers/1/contacts/1
+  PUT: http://customersampleapi.us-e2.cloudhub.io/api/customers/1/contacts/1
+  DELETE: http://customersampleapi.us-e2.cloudhub.io/api/customers/1/contacts/1
 ```
 Database scripts
 ```
